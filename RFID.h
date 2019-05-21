@@ -87,9 +87,9 @@ void control_menu_screen(bool &_access_allow, int &_menu_screen)
 		Display(_access_allow, pointer, _menu_screen, access_DHT, WF_status, MQTT_status, humid, temp); 
 		break;
 	case 2:
-		if (WF_status) MQTT_trig = !MQTT_trig; button_press = LOW;	button_pointer = LOW; break;
+		if (WF_status) MQTT_trig = true; button_press = LOW;	button_pointer = LOW; break;
 	case 3:
-		WF_trig = !WF_trig;  button_press = LOW; button_press = LOW; button_pointer = LOW; break;
+		WF_trig = true;  button_press = LOW; button_press = LOW; button_pointer = LOW; break;
 	case 5:
 		_access_allow = false; pointer = 0; button_press = LOW; 	button_pointer = LOW; 
 		Display(_access_allow, pointer, _menu_screen, access_DHT, WF_status, MQTT_status, humid, temp); 

@@ -19,6 +19,7 @@ void access_WF(char * ID, char *PASS, int pointer)
 	if (WF_trig == true && WF_status==false)
 	{
 		WF_status = true;
+		WF_trig = false;
 		WiFi.begin(ID, PASS);
 		lcd.clear();
 		int count_dot = 0;
@@ -39,10 +40,9 @@ void access_WF(char * ID, char *PASS, int pointer)
 		lcd.print("connected              ");
 		Display(true, pointer, false, false, WF_status, MQTT_status); // pointer=2
 	}
-	else if (WF_trig == false && WF_status == true)
+	else if (WF_trig == true && WF_status == true)
 	{
-		MQTT_status = true;
-		MQTT_trig = false;
+		WF_trig = false;
 		WiFi.disconnect();
 		int count = 0;
 		while (WiFi.status() != WL_CONNECTED && count <50)
@@ -75,9 +75,9 @@ void access_MQTT(int pointer)
 {
 	if (MQTT_status == false && MQTT_trig == true)
 	{
+		MQTT_trig = false;
 		lcd.clear();
 		int count_dot = 0;
-		MQTT_status = true;
 		while (1)
 		{
 			lcd.setCursor(0,0);
@@ -90,6 +90,7 @@ void access_MQTT(int pointer)
 			count_dot = (count_dot + 1) % 16;
 			if (count_dot == 0) lcd.clear();
 		}
+		MQTT_status = true;
 		lcd.clear();
 		lcd.setCursor(3, 0);
 		lcd.print("Connected     ");
@@ -99,10 +100,11 @@ void access_MQTT(int pointer)
 		MQTT.publish("Access", "Connected");
 		Display(true, pointer, false, false, WF_status,MQTT_status);  //pointer=3
 	}
-	else if (MQTT_status == true && MQTT_trig == false)
+	else if ((MQTT_status == true && MQTT_trig == true)||(WF_status==false && MQTT_status==true))
 	{
 		MQTT.disconnect();
 		MQTT_status = false;
+		MQTT_trig = false;
 		Display(true, pointer, false, false, WF_status, MQTT_status);
 	}
 }
