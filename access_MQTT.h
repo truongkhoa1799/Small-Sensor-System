@@ -18,31 +18,47 @@ void access_WF(char * ID, char *PASS, int pointer)
 {
 	if (WF_trig == true && WF_status==false)
 	{
-		WF_status = true;
+		WF_trig = false;
 		WiFi.begin(ID, PASS);
 		lcd.clear();
+		int watchDog = 0;
 		int count_dot = 0;
-		while (WiFi.status() != WL_CONNECTED)
+		while (WiFi.status() != WL_CONNECTED && watchDog<200)
 		{
 			lcd.setCursor(0, 0);
 			lcd.print("Connecting");
 			lcd.setCursor(count_dot,1);
+			watchDog++;
 			delay(50);
 			lcd.print(".");
 			count_dot = (count_dot + 1) % 16;
 			if (count_dot == 0) lcd.clear();
 		}
-		lcd.clear();
-		lcd.setCursor(4,0);
-		lcd.print("Wifi is     ");
-		lcd.setCursor(3,1);
-		lcd.print("connected              ");
-		Display(true, pointer, false, false, WF_status, MQTT_status); // pointer=2
+		if (watchDog != 200)
+		{
+			WF_status = true;
+			lcd.clear();
+			lcd.setCursor(4, 0);
+			lcd.print("Wifi is     ");
+			lcd.setCursor(3, 1);
+			lcd.print("connected              ");
+			delay(1000);
+			Display(true, pointer, false, false, WF_status, MQTT_status); // pointer=2
+		}
+		else
+		{
+			lcd.clear();
+			lcd.setCursor(0, 0);
+			lcd.print("Fail to connect     ");
+			lcd.setCursor(6, 1);
+			lcd.print("WiFi              ");
+			delay(2000);
+			Display(true, pointer, false, false, WF_status, MQTT_status); // pointer=2
+		}
 	}
-	else if (WF_trig == false && WF_status == true)
+	else if (WF_trig == true && WF_status == true)
 	{
-		MQTT_status = true;
-		MQTT_trig = false;
+		WF_trig = false;
 		WiFi.disconnect();
 		int count = 0;
 		while (WiFi.status() != WL_CONNECTED && count <50)
@@ -75,14 +91,16 @@ void access_MQTT(int pointer)
 {
 	if (MQTT_status == false && MQTT_trig == true)
 	{
+		MQTT_trig = false;
+		int watchDog = 0;
 		lcd.clear();
 		int count_dot = 0;
-		MQTT_status = true;
-		while (1)
+		while (watchDog<400)
 		{
 			lcd.setCursor(0,0);
 			lcd.print("Connecting");
 			lcd.setCursor(count_dot, 1);
+			watchDog++;
 			delay(50);
 			if (!MQTT.connect("Aquatic Tank", "bfglrgpa", "Xu7o8LYQCn4y"))
 				lcd.print(".");
@@ -90,19 +108,34 @@ void access_MQTT(int pointer)
 			count_dot = (count_dot + 1) % 16;
 			if (count_dot == 0) lcd.clear();
 		}
-		lcd.clear();
-		lcd.setCursor(3, 0);
-		lcd.print("Connected     ");
-		lcd.setCursor(3, 1);
-		lcd.print("to Server              ");
-		delay(2000);
-		MQTT.publish("Access", "Connected");
-		Display(true, pointer, false, false, WF_status,MQTT_status);  //pointer=3
+		if (watchDog != 400)
+		{
+			MQTT_status = true;
+			lcd.clear();
+			lcd.setCursor(3, 0);
+			lcd.print("Connected     ");
+			lcd.setCursor(3, 1);
+			lcd.print("to Server              ");
+			delay(2000);
+			MQTT.publish("Access", "Connected");
+			Display(true, pointer, false, false, WF_status, MQTT_status);  //pointer=3
+		}
+		else
+		{
+			lcd.clear();
+			lcd.setCursor(3, 0);
+			lcd.print("Fail to connect     ");
+			lcd.setCursor(4, 1);
+			lcd.print("Server              ");
+			delay(2000);
+			Display(true, pointer, false, false, WF_status, MQTT_status);  //pointer=3
+		}
 	}
-	else if (MQTT_status == true && MQTT_trig == false)
+	else if ((MQTT_status == true && MQTT_trig == true)||(WF_status==false && MQTT_status==true))
 	{
 		MQTT.disconnect();
 		MQTT_status = false;
+		MQTT_trig = false;
 		Display(true, pointer, false, false, WF_status, MQTT_status);
 	}
 }
