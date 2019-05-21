@@ -33,45 +33,6 @@ void send_mess( int pointer, bool MQTT_status, bool & MS_trig)
 	if (MQTT_status==false && MS_trig)
 	{
 		MS_trig = false;
-		lcd.clear();
-		lcd.setCursor(0, 0);
-		Serial.print("AT\r\n");
-		delay(500);
-		while (Serial.available()) {
-			char c = Serial.read();
-			lcd.print(c);
-		}
-		delay(2000);
-		lcd.clear();
-		lcd.setCursor(0, 0);
-		Serial.println("AT+CMGF=1\r\n");
-		delay(500);
-		while (Serial.available()) {
-			char c = Serial.read();
-			lcd.print(c);
-		}
-		delay(2000);
-		lcd.clear();
-		lcd.setCursor(0, 0);
-		Serial.print("AT+CMGS=\"+84925343284\"\r\n");
-		delay(500);
-		Serial.print("hwllo");
-		Serial.write(26);
-		Serial.print("\r\n");
-		delay(500);
-		lcd.setCursor(0, 0);
-		int n = 0;
-		while (Serial.available()) {
-			char c = Serial.read();
-			lcd.print(c);
-			n++;
-			if (n > 16)
-			{
-				lcd.setCursor(0, 1);
-			}
-		}
-		delay(2000);
-		lcd.print("DONE");
 		delay(1000);
 		Display(true, pointer, true, false, false, false);
 	}

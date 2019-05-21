@@ -18,10 +18,6 @@ void access_WF(char * ID, char *PASS, int pointer)
 {
 	if (WF_trig == true && WF_status==false)
 	{
-<<<<<<< HEAD
-		WF_status = true;
-=======
->>>>>>> TrKhoa
 		WF_trig = false;
 		WiFi.begin(ID, PASS);
 		lcd.clear();
@@ -96,16 +92,10 @@ void access_MQTT(int pointer)
 	if (MQTT_status == false && MQTT_trig == true)
 	{
 		MQTT_trig = false;
-<<<<<<< HEAD
-		lcd.clear();
-		int count_dot = 0;
-		while (1)
-=======
 		int watchDog = 0;
 		lcd.clear();
 		int count_dot = 0;
 		while (watchDog<400)
->>>>>>> TrKhoa
 		{
 			lcd.setCursor(0,0);
 			lcd.print("Connecting");
@@ -118,17 +108,6 @@ void access_MQTT(int pointer)
 			count_dot = (count_dot + 1) % 16;
 			if (count_dot == 0) lcd.clear();
 		}
-<<<<<<< HEAD
-		MQTT_status = true;
-		lcd.clear();
-		lcd.setCursor(3, 0);
-		lcd.print("Connected     ");
-		lcd.setCursor(3, 1);
-		lcd.print("to Server              ");
-		delay(2000);
-		MQTT.publish("Access", "Connected");
-		Display(true, pointer, false, false, WF_status,MQTT_status);  //pointer=3
-=======
 		if (watchDog != 400)
 		{
 			MQTT_status = true;
@@ -151,7 +130,6 @@ void access_MQTT(int pointer)
 			delay(2000);
 			Display(true, pointer, false, false, WF_status, MQTT_status);  //pointer=3
 		}
->>>>>>> TrKhoa
 	}
 	else if ((MQTT_status == true && MQTT_trig == true)||(WF_status==false && MQTT_status==true))
 	{
