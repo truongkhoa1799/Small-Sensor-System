@@ -1,0 +1,104 @@
+#pragma once
+#include <access_MQTT.h>
+#include <DHTesp.h>
+DHTesp dht;
+float temp;
+float humid;
+char message[6][20] = { "HELLO","WHAT R U DOING","EATEN RICE YET?","TEMPER:    ","HUMID:    " ,"QUIT MESSAGE" };
+void change_to_char(char *temp_c, int pointer)
+{
+	int TEMP;
+	(pointer == 3) ? TEMP = temp*100 : TEMP = humid*100;
+	for (int i = 0; i < 2; i++)
+	{
+		char c = TEMP % 10 + 48;
+		TEMP = TEMP / 10;
+		temp_c[4 - i] = c;
+	}
+	temp_c[2] = '.';
+	for (int i = 0; i < 2; i++)
+	{
+		char c = TEMP % 10 + 48;
+		TEMP = TEMP / 10;
+		temp_c[1 - i] = c;
+	}
+}
+void check_DHT()
+{
+	humid = dht.getHumidity();
+	temp = dht.getTemperature();
+}
+void send_mess( int pointer, bool MQTT_status, bool & MS_trig)
+{
+	if (MQTT_status==false && MS_trig)
+	{
+		MS_trig = false;
+		lcd.clear();
+		lcd.setCursor(0, 0);
+		Serial.print("AT\r\n");
+		delay(500);
+		while (Serial.available()) {
+			char c = Serial.read();
+			lcd.print(c);
+		}
+		delay(2000);
+		lcd.clear();
+		lcd.setCursor(0, 0);
+		Serial.println("AT+CMGF=1\r\n");
+		delay(500);
+		while (Serial.available()) {
+			char c = Serial.read();
+			lcd.print(c);
+		}
+		delay(2000);
+		lcd.clear();
+		lcd.setCursor(0, 0);
+		Serial.print("AT+CMGS=\"+84925343284\"\r\n");
+		delay(500);
+		Serial.print("hwllo");
+		Serial.write(26);
+		Serial.print("\r\n");
+		delay(500);
+		lcd.setCursor(0, 0);
+		int n = 0;
+		while (Serial.available()) {
+			char c = Serial.read();
+			lcd.print(c);
+			n++;
+			if (n > 16)
+			{
+				lcd.setCursor(0, 1);
+			}
+		}
+		delay(2000);
+		lcd.print("DONE");
+		delay(1000);
+		Display(true, pointer, true, false, false, false);
+	}
+	else if (MS_trig && MQTT_status){
+		MS_trig = false;
+		lcd.clear();
+		if (pointer == 4 || pointer == 3)
+		{
+			char temp_c[5] = "";
+			char temp[16]="";
+			strcpy(temp, message[pointer]);
+			change_to_char(temp_c, pointer);
+			strcat(temp, temp_c);
+			MQTT.publish("From RFID", temp);
+			lcd.print("Sent to server");
+			lcd.setCursor(0, 1);
+			lcd.print(temp);
+			delay(2000);
+		}
+		else {
+			MQTT.publish("From RFID", message[pointer]);
+			lcd.print("Sent to server");
+			lcd.setCursor(0, 1);
+			lcd.print(message[pointer]);
+			delay(2000);
+		}
+		Display(true, pointer, true, false, false, false);
+	}
+	
+}
